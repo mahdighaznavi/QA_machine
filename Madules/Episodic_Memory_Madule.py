@@ -13,7 +13,9 @@ def create_gates(input_module_output, question, m, index, tensor, sentence_lengt
     return create_gates(input_module_output, question, m, index + 1, new_tensor)
 
 
-def episodic_memory_module(input_module_output, question, m, time_Step):
-
+def episodic_memory_module(input_module_output, question):
     # TODO
     g = create_gates(input_module_output, question, m, 0, )
+    def initializer():
+        temp = np.zeros()
+        return [False], tf.boolean_mask(input_module_output, np)

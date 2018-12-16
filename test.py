@@ -15,7 +15,7 @@ def embedd(corpus):
 
 
 corpus = 'salam.'
-question = 'aleik't
+question = 'aleik'
 embeddings = embedd(corpus)
 input_module_output = Input_Madule.input_module(embeddings, embedding_size)
 question_rnn = Input_Madule.input_module(question, embedding_size)

@@ -1,26 +1,27 @@
 import tensorflow as tf
 import tensorflow.contrib.seq2seq as tss
+import hyper_parameters_and_constants as HP
 
 
-def answer_module(inputs, question, max_sentence_length, EOS_token):
+def answer_module(inputs, question, dictionary):
     def initializer():
-        return [False], inputs
+        return [False], tf.concat([inputs, question], axis=1)
 
     def sample(time, output, state):
         return tf.zeros(shape=[1])
 
     def next_inputs(time, output, state, sample_ids):
-        #TODO: units?
-        y = tf.layers.dense(inputs=outputs, units= ,reuse=True, name='answer_next_input_dense_layer')
-        next_input = tf.concat([y, question], axis=1)
+        temp = tf.layers.dense(inputs=output, units=len(dictionary), reuse=True, name='answer_next_input_dense_layer')
+        y = dictionary[tf.argmax(temp)]
+        next_input = tf.concat([y, question])
         next_state = state
-        finished = tf.math.equal(EOS_token, state)
+        finished = tf.math.equal(HP.EOS_token, state)
         return finished, next_input, next_state
 
     helper = tss.CustomHelper(initialize_fn=initializer, sample_fn=sample, next_inputs_fn=next_inputs)
-    # TODO: what is num_units?
-    gru_cell = tf.nn.rnn_cell.GRUCell()
+    gru_cell = tf.nn.rnn_cell.GRUCell(HP.answer_module_hidden_size)
 
     decoder = tss.BasicDecoder(gru_cell, helper, inputs)
-    outputs, _, _ = tss.dynamic_decode(decoder, impute_finished=True, maximum_iterations=max_sentence_length)
-    return outputs
+    outputs, _, sequence_length = tss.dynamic_decode(decoder, impute_finished=True,
+                                                     maximum_iterations=HP.max_sentence_length)
+    return outputs, sequence_length
