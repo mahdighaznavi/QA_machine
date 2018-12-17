@@ -5,14 +5,18 @@ import hyper_parameters_and_constants as HP
 
 def answer_module(inputs, question, dictionary):
     def initializer():
-        return [False], tf.concat([inputs, question], axis=1)
+        return False, tf.concat([inputs, question], axis=1)
 
-    def sample(time, output, state):
-        return tf.zeros(shape=[1])
-
-    def next_inputs(time, output, state, sample_ids):
+    def output_word(output):
         temp = tf.layers.dense(inputs=output, units=len(dictionary), reuse=True, name='answer_next_input_dense_layer')
         y = dictionary[tf.argmax(temp)]
+        return y
+
+    def sample(time, output, state):
+        return output_word(output)
+
+    def next_inputs(time, output, state, sample_ids):
+        y = output_word(output)
         next_input = tf.concat([y, question])
         next_state = state
         finished = tf.math.equal(HP.EOS_token, state)
@@ -21,7 +25,7 @@ def answer_module(inputs, question, dictionary):
     helper = tss.CustomHelper(initialize_fn=initializer, sample_fn=sample, next_inputs_fn=next_inputs)
     gru_cell = tf.nn.rnn_cell.GRUCell(HP.answer_module_hidden_size)
 
-    decoder = tss.BasicDecoder(gru_cell, helper, inputs)
+    decoder = tss.BasicDecoder(gru_cell, helper, tf.zeros([HP.answer_module_hidden_size]))
     outputs, _, sequence_length = tss.dynamic_decode(decoder, impute_finished=True,
                                                      maximum_iterations=HP.max_sentence_length)
-    return outputs, sequence_length
+    return outputs.samole_ids, sequence_length
