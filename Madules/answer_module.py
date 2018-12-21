@@ -3,13 +3,13 @@ import tensorflow.contrib.seq2seq as tss
 import hyper_parameters_and_constants as HP
 
 
-def answer_module(inputs, question, dictionary):
+def answer_module(inputs, question):
     def initializer():
         return False, tf.concat([inputs, question], axis=1)
 
     def output_word(output):
-        temp = tf.layers.dense(inputs=output, units=len(dictionary), reuse=True, name='answer_next_input_dense_layer')
-        y = dictionary[tf.argmax(temp)]
+        temp = tf.layers.dense(inputs=output, units=HP.word_numbers, reuse=True, name='answer_next_input_dense_layer')
+        y = tf.argmax(temp)
         return y
 
     def sample(time, output, state):
