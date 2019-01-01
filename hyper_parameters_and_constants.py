@@ -10,7 +10,8 @@ answer_module_time_step = 2
 batch_size = 64
 episodic_memory_dim = embedding_size
 word_numbers = 10000
+max_data_size = 10
 
 # constants
 EOS_token = 1
-mask = np.concatenate(np.repeat(False, num_sentence - 1), True)
+mask = np.concatenate([np.repeat(False, num_sentence - 1), [True]])
